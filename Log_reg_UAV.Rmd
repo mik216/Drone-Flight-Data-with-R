@@ -1,0 +1,17 @@
+---
+title: "Log_Reg_UAV"
+output: html_document
+---
+
+
+
+```{r,eval=F}
+mydata <- read.csv("UAV.csv")
+
+print(mydata)
+LinearReg = lm(time_over_200 ~ speed, data = mydata)
+summary(LinearReg)
+```
+
+```{r,eval=F}
+

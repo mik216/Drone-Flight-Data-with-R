@@ -1,0 +1,78 @@
+---
+title: "Logistic Regression"
+output: html_document
+---
+
+```{r}
+set.seed(101)
+b0 = 1
+b1 = -0.2
+x=seq(1,10,length.out=50)
+
+eta = b0+b1*x+0.1*rnorm(50)
+
+p = exp(eta)/(1+exp(eta))
+
+y = matrix(1,ncol=1,nrow=50)
+
+y[which(p < 0.5)]=0
+
+plot(x,y,type='p')
+# sm_y=smooth.spline(x,y,spar=0.8)
+
+sm_y = ksmooth(x,y,kernel="normal",bandwidth=1.5)
+
+lines(sm_y$x,sm_y$y,col='red')
+```
+
+
+```{r}
+mydata <- read.csv("https://stats.idre.ucla.edu/stat/data/binary.csv")
+
+mylogit <- glm(admit ~ gre + gpa, data = mydata, family = binomial(link="logit"))
+summary(mylogit)
+
+```
+
+
+```{r}
+set.seed(123)
+p = 5
+n = 500
+x = matrix(rnorm(n * p), n, p)
+beta.1 = runif(p, -2, 2)
+
+sigmoid = function(x){
+  
+ 1 /(1 + exp(-x)) # inverse canonical link
+}
+
+p.true = sigmoid(x %*% beta.1)
+y <- rbinom(n, 1, p.true)
+
+# fitting with our procedure
+Logistic_reg <- function(x, y, b.init, sigmoid, tol=1e-8) {
+  change = Inf
+  b.old = b.init
+  
+  while(change > tol) {
+    eta = x %*% b.old  # linear predictor
+    y.hat = sigmoid(eta)
+    h.prime_eta = y.hat * (1 - y.hat)
+    z = (y - y.hat) / h.prime_eta
+
+    b.new = b.old + lm(z ~ x - 1, weights = h.prime_eta)$coef  # regression
+    change = sqrt(sum((b.new - b.old)^2))
+    b.old = b.new
+  }
+  b.new
+}
+
+Logistic_reg(x, y, rep(1,p), sigmoid)
+
+
+glm(y ~ x - 1, family=binomial())$coef
+
+```
+
+
